@@ -1,0 +1,65 @@
+{
+  "name": "competitor-analysis-platform",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"pnpm dev:server\" \"pnpm dev:client\"",
+    "dev:client": "vite",
+    "dev:server": "tsx watch server/index.ts",
+    "build": "vite build && esbuild server/index.ts --bundle --platform=node --outdir=dist/server --format=esm",
+    "check": "tsc --noEmit",
+    "test": "vitest run --config vitest.config.ts",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^1.0",
+    "@ai-sdk/openai": "^1.3.24",
+    "@tanstack/react-query": "^5.80",
+    "@tanstack/react-table": "^8.21",
+    "@trpc/client": "^11.0",
+    "@trpc/react-query": "^11.0",
+    "@trpc/server": "^11.0",
+    "ai": "^4.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5",
+    "drizzle-orm": "^0.44",
+    "express": "^4.21",
+    "global-agent": "^4.1.3",
+    "jose": "^6.0",
+    "mysql2": "^3.14",
+    "node-cron": "^3.0",
+    "playwright": "^1.52",
+    "react": "^19.1",
+    "react-dom": "^19.1",
+    "react-router": "^7.6",
+    "superjson": "^2.2",
+    "undici": "^8.4.1",
+    "zod": "^3.25"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0",
+    "@types/node": "^22.15",
+    "@types/node-cron": "^3.0",
+    "@types/react": "^19.1",
+    "@types/react-dom": "^19.1",
+    "@vitejs/plugin-react": "^4.5",
+    "concurrently": "^9.1",
+    "drizzle-kit": "^0.31",
+    "esbuild": "^0.25",
+    "tailwindcss": "^4.1",
+    "tsx": "^4.19",
+    "typescript": "^5.8",
+    "vite": "^7.0",
+    "vitest": "^3.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}
