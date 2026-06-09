@@ -15,7 +15,6 @@ export default function ProductTable() {
     sortDir,
   });
 
-  // Collect all unique param keys across products
   const paramKeys = Array.from(
     new Set(products.flatMap((p) => Object.keys(p.params)))
   ).sort();
@@ -29,81 +28,99 @@ export default function ProductTable() {
     }
   };
 
-  if (isLoading) return <div className="text-zinc-500">加载中...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-text-muted text-sm">加载中...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="flex gap-3 items-center">
+      <div className="flex items-center gap-3">
         <select
           value={competitorId ?? ""}
           onChange={(e) => setCompetitorId(e.target.value ? Number(e.target.value) : undefined)}
-          className="px-3 py-1.5 bg-zinc-800 border border-zinc-700 rounded text-xs"
+          className="px-3 py-2 bg-surface-2 border border-border-default rounded-md text-[13px] text-text-primary focus:outline-none focus:border-brand-500"
         >
           <option value="">全部竞品</option>
           {competitors.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
-        <input
-          placeholder="搜索型号..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="px-3 py-1.5 bg-zinc-800 border border-zinc-700 rounded text-xs w-48 focus:outline-none focus:border-cyan-600"
-        />
-        <span className="text-zinc-500 text-[10px]">{products.length} 条产品</span>
+        <div className="relative flex-1 max-w-xs">
+          <input
+            placeholder="搜索型号..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 bg-surface-2 border border-border-default rounded-md text-[13px] text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30"
+          />
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-[11px]">⌕</span>
+        </div>
+        <div className="text-[12px] text-text-muted">{products.length} 条产品</div>
       </div>
 
       {/* Table */}
-      <div className="overflow-auto border border-zinc-800 rounded">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="bg-zinc-900/80 border-b border-zinc-800">
-              <th className="px-3 py-2 text-left text-zinc-400 font-medium">型号</th>
-              <th className="px-3 py-2 text-left text-zinc-400 font-medium">竞品</th>
-              <th className="px-3 py-2 text-left text-zinc-400 font-medium">分类</th>
-              {paramKeys.map((key) => (
-                <th
-                  key={key}
-                  onClick={() => handleSort(key)}
-                  className="px-3 py-2 text-left text-zinc-400 font-medium cursor-pointer hover:text-zinc-200 select-none"
-                >
-                  {key}
-                  {sortKey === key && (
-                    <span className="ml-1">{sortDir === "asc" ? "↑" : "↓"}</span>
-                  )}
+      <div className="bg-surface-1 border border-border-default rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-[13px]">
+            <thead>
+              <tr className="border-b border-border-default">
+                <th className="px-4 py-3 text-left text-[11px] font-semibold text-text-muted uppercase tracking-wider bg-surface-2">
+                  型号
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((p) => (
-              <tr
-                key={p.id}
-                className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors"
-              >
-                <td className="px-3 py-2 font-semibold text-zinc-100">{p.model}</td>
-                <td className="px-3 py-2 text-zinc-400">{p.competitorName}</td>
-                <td className="px-3 py-2 text-zinc-500">{p.category}{p.subCategory ? ` / ${p.subCategory}` : ""}</td>
+                <th className="px-4 py-3 text-left text-[11px] font-semibold text-text-muted uppercase tracking-wider bg-surface-2">
+                  竞品
+                </th>
+                <th className="px-4 py-3 text-left text-[11px] font-semibold text-text-muted uppercase tracking-wider bg-surface-2">
+                  分类
+                </th>
                 {paramKeys.map((key) => (
-                  <td key={key} className="px-3 py-2 text-zinc-300">
-                    {p.params[key] ?? "—"}
-                  </td>
+                  <th
+                    key={key}
+                    onClick={() => handleSort(key)}
+                    className="px-4 py-3 text-left text-[11px] font-semibold text-text-muted uppercase tracking-wider bg-surface-2 cursor-pointer hover:text-text-primary select-none"
+                  >
+                    <span className="flex items-center gap-1">
+                      {key}
+                      {sortKey === key && (
+                        <span className="text-brand-400">{sortDir === "asc" ? "↑" : "↓"}</span>
+                      )}
+                    </span>
+                  </th>
                 ))}
               </tr>
-            ))}
-            {products.length === 0 && (
-              <tr>
-                <td
-                  colSpan={3 + paramKeys.length}
-                  className="px-3 py-12 text-center text-zinc-600"
-                >
-                  暂无产品数据，请先采集竞品
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-border-subtle">
+              {products.map((p, i) => (
+                <tr key={p.id} className={`hover:bg-surface-2 transition-colors ${i % 2 === 0 ? "" : "bg-surface-1/50"}`}>
+                  <td className="px-4 py-3 font-medium text-text-primary">{p.model}</td>
+                  <td className="px-4 py-3 text-text-secondary">{p.competitorName}</td>
+                  <td className="px-4 py-3">
+                    <span className="px-2 py-0.5 bg-surface-3 rounded text-[11px] text-text-muted">
+                      {p.category}{p.subCategory ? ` / ${p.subCategory}` : ""}
+                    </span>
+                  </td>
+                  {paramKeys.map((key) => (
+                    <td key={key} className="px-4 py-3 text-text-secondary font-mono text-[12px]">
+                      {p.params[key] ?? <span className="text-text-muted">—</span>}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+              {products.length === 0 && (
+                <tr>
+                  <td colSpan={3 + paramKeys.length} className="px-4 py-16 text-center">
+                    <div className="text-text-muted text-sm">暂无产品数据</div>
+                    <div className="text-text-muted text-[12px] mt-1">请先采集竞品源</div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

@@ -19,40 +19,33 @@ const queryClient = new QueryClient({
 });
 
 const trpcClient = trpc.createClient({
-  links: [
-    httpBatchLink({ url: "/trpc", transformer: superjson }),
-  ],
+  links: [httpBatchLink({ url: "/trpc", transformer: superjson })],
 });
 
-const PAGE_TITLES: Record<string, string> = {
-  competitors: "竞品源管理",
-  products: "产品对比",
-  diff: "变更历史",
-  crawllog: "采集历史",
-  groups: "分组管理",
-};
-
-const PAGE_COMPONENTS: Record<string, React.FC> = {
-  competitors: CompetitorList,
-  products: ProductTable,
-  diff: DiffViewer,
-  crawllog: CrawlLogList,
-  groups: GroupManager,
+const PAGE_CONFIG: Record<string, { title: string; subtitle: string; component: React.FC }> = {
+  competitors: { title: "竞品源管理", subtitle: "管理监控目标", component: CompetitorList },
+  products: { title: "产品对比", subtitle: "参数横向对比", component: ProductTable },
+  diff: { title: "变更追踪", subtitle: "参数变更历史", component: DiffViewer },
+  crawllog: { title: "采集日志", subtitle: "任务执行记录", component: CrawlLogList },
+  groups: { title: "分组管理", subtitle: "竞品分组", component: GroupManager },
 };
 
 export default function App() {
   const [page, setPage] = useState("competitors");
-  const PageComponent = PAGE_COMPONENTS[page] ?? CompetitorList;
+  const config = PAGE_CONFIG[page] ?? PAGE_CONFIG.competitors;
+  const PageComponent = config.component;
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <div className="flex h-screen bg-zinc-950 text-zinc-100 font-mono text-sm">
+        <div className="flex h-screen bg-surface-0 text-text-primary">
           <Sidebar active={page} onNavigate={setPage} />
           <div className="flex-1 flex flex-col min-w-0">
-            <Header title={PAGE_TITLES[page] ?? page} />
-            <main className="flex-1 overflow-auto p-6">
-              <PageComponent />
+            <Header title={config.title} subtitle={config.subtitle} />
+            <main className="flex-1 overflow-auto">
+              <div className="max-w-[1400px] mx-auto p-6">
+                <PageComponent />
+              </div>
             </main>
           </div>
         </div>

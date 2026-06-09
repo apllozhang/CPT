@@ -1,13 +1,5 @@
-import { initTRPC } from "@trpc/server";
-import superjson from "superjson";
+import { router, publicProcedure } from "./trpc-base.js";
 import { z } from "zod";
-
-const t = initTRPC.create({
-  transformer: superjson,
-});
-
-export const router = t.router;
-export const publicProcedure = t.procedure;
 
 // Import sub-routers
 import { competitorRouter } from "./competitor/router.js";

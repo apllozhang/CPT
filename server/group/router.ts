@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { router, publicProcedure } from "../trpc.js";
+import { router, publicProcedure } from "../trpc-base.js";
 import * as svc from "./service.js";
 
 export const groupRouter = router({

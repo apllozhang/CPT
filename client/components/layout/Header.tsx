@@ -1,20 +1,20 @@
 interface HeaderProps {
   title: string;
-  onManualCrawl?: () => void;
+  subtitle?: string;
+  actions?: React.ReactNode;
 }
 
-export default function Header({ title, onManualCrawl }: HeaderProps) {
+export default function Header({ title, subtitle, actions }: HeaderProps) {
   return (
-    <header className="h-14 border-b border-zinc-800 flex items-center justify-between px-6 bg-zinc-900/30">
-      <h1 className="text-base font-semibold tracking-tight">{title}</h1>
-      {onManualCrawl && (
-        <button
-          onClick={onManualCrawl}
-          className="px-3 py-1.5 text-xs font-medium bg-cyan-600 hover:bg-cyan-500 text-white rounded transition-colors"
-        >
-          ↻ 立即采集
-        </button>
-      )}
+    <header className="h-14 bg-surface-1 border-b border-border-default flex items-center justify-between px-6">
+      <div className="flex items-center gap-3">
+        <h1 className="text-[15px] font-semibold tracking-tight text-text-primary">{title}</h1>
+        {subtitle && <span className="text-[12px] text-text-muted">·</span>}
+        {subtitle && <span className="text-[12px] text-text-muted">{subtitle}</span>}
+      </div>
+      <div className="flex items-center gap-2">
+        {actions}
+      </div>
     </header>
   );
 }

@@ -18,7 +18,7 @@ export default function CompetitorList() {
 
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: "", url: "", groupId: 0, scheduleCron: "0 0 * * *" });
-  const [crawlResult, setCrawlResult] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
   const handleCreate = () => {
     createMut.mutate({
@@ -31,81 +31,118 @@ export default function CompetitorList() {
 
   const handleTrigger = async (id: number) => {
     const res = await triggerMut.mutateAsync({ competitorId: id });
-    setCrawlResult(`采集完成：共 ${res.total} 产品，${res.new} 新增，${res.changed} 变更，耗时 ${res.durationMs}ms`);
-    setTimeout(() => setCrawlResult(null), 5000);
+    setToast(`采集完成：${res.total} 产品，${res.new} 新增，${res.changed} 变更，${(res.durationMs / 1000).toFixed(1)}s`);
+    setTimeout(() => setToast(null), 5000);
   };
 
-  if (isLoading) return <div className="text-zinc-500">加载中...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-text-muted text-sm">加载中...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {/* Stats bar */}
+      <div className="grid grid-cols-4 gap-4">
+        {[
+          { label: "竞品源", value: competitors.length, color: "text-brand-400" },
+          { label: "运行中", value: competitors.filter((c) => c.status === "active").length, color: "text-success" },
+          { label: "已暂停", value: competitors.filter((c) => c.status === "paused").length, color: "text-text-muted" },
+          { label: "异常", value: competitors.filter((c) => c.status === "error").length, color: "text-danger" },
+        ].map((stat) => (
+          <div key={stat.label} className="bg-surface-1 border border-border-default rounded-lg p-4">
+            <div className="text-[11px] text-text-muted uppercase tracking-wider">{stat.label}</div>
+            <div className={`text-2xl font-semibold mt-1 ${stat.color}`}>{stat.value}</div>
+          </div>
+        ))}
+      </div>
+
       {/* Action bar */}
       <div className="flex items-center justify-between">
-        <span className="text-zinc-500 text-xs">{competitors.length} 个竞品源</span>
+        <div className="text-[13px] text-text-muted">
+          共 {competitors.length} 个竞品源
+        </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-3 py-1.5 text-xs font-medium bg-zinc-800 hover:bg-zinc-700 rounded border border-zinc-700 transition-colors"
+          className="px-4 py-2 text-[13px] font-medium bg-brand-600 hover:bg-brand-500 text-white rounded-md transition-colors shadow-sm"
         >
-          + 添加竞品
+          + 添加竞品源
         </button>
       </div>
 
       {/* Toast */}
-      {crawlResult && (
-        <div className="p-3 bg-cyan-900/30 border border-cyan-800 rounded text-cyan-300 text-xs">
-          {crawlResult}
+      {toast && (
+        <div className="px-4 py-3 bg-success/10 border border-success/30 rounded-lg text-success text-[13px] flex items-center gap-2">
+          <span className="text-[10px]">✓</span>
+          {toast}
         </div>
       )}
 
       {/* Add form */}
       {showForm && (
-        <div className="p-4 bg-zinc-900 border border-zinc-800 rounded space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <input
-              placeholder="竞品名称"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded text-sm focus:outline-none focus:border-cyan-600"
-            />
-            <input
-              placeholder="产品页 URL"
-              value={form.url}
-              onChange={(e) => setForm({ ...form, url: e.target.value })}
-              className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded text-sm focus:outline-none focus:border-cyan-600"
-            />
-            <select
-              value={form.groupId}
-              onChange={(e) => setForm({ ...form, groupId: Number(e.target.value) })}
-              className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded text-sm"
-            >
-              <option value={0}>无分组</option>
-              {groups.map((g) => (
-                <option key={g.id} value={g.id}>{g.name}</option>
-              ))}
-            </select>
-            <select
-              value={form.scheduleCron}
-              onChange={(e) => setForm({ ...form, scheduleCron: e.target.value })}
-              className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded text-sm"
-            >
-              <option value="0 * * * *">每小时</option>
-              <option value="0 */6 * * *">每 6 小时</option>
-              <option value="0 */12 * * *">每 12 小时</option>
-              <option value="0 0 * * *">每天</option>
-              <option value="0 0 * * 1">每周</option>
-            </select>
+        <div className="bg-surface-1 border border-border-default rounded-lg p-5 space-y-4">
+          <div className="text-[13px] font-medium text-text-primary mb-3">添加新竞品源</div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[11px] text-text-muted uppercase tracking-wider">竞品名称</label>
+              <input
+                placeholder="如：H3C WLAN"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                className="w-full px-3 py-2 bg-surface-2 border border-border-default rounded-md text-[13px] text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] text-text-muted uppercase tracking-wider">产品页 URL</label>
+              <input
+                placeholder="https://..."
+                value={form.url}
+                onChange={(e) => setForm({ ...form, url: e.target.value })}
+                className="w-full px-3 py-2 bg-surface-2 border border-border-default rounded-md text-[13px] text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] text-text-muted uppercase tracking-wider">分组</label>
+              <select
+                value={form.groupId}
+                onChange={(e) => setForm({ ...form, groupId: Number(e.target.value) })}
+                className="w-full px-3 py-2 bg-surface-2 border border-border-default rounded-md text-[13px] text-text-primary focus:outline-none focus:border-brand-500"
+              >
+                <option value={0}>无分组</option>
+                {groups.map((g) => (
+                  <option key={g.id} value={g.id}>{g.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] text-text-muted uppercase tracking-wider">采集频率</label>
+              <select
+                value={form.scheduleCron}
+                onChange={(e) => setForm({ ...form, scheduleCron: e.target.value })}
+                className="w-full px-3 py-2 bg-surface-2 border border-border-default rounded-md text-[13px] text-text-primary focus:outline-none focus:border-brand-500"
+              >
+                <option value="0 * * * *">每小时</option>
+                <option value="0 */6 * * *">每 6 小时</option>
+                <option value="0 */12 * * *">每 12 小时</option>
+                <option value="0 0 * * *">每天</option>
+                <option value="0 0 * * 1">每周</option>
+              </select>
+            </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3 pt-2">
             <button
               onClick={handleCreate}
               disabled={!form.name || !form.url}
-              className="px-4 py-1.5 text-xs font-medium bg-cyan-600 hover:bg-cyan-500 text-white rounded disabled:opacity-40 transition-colors"
+              className="px-5 py-2 text-[13px] font-medium bg-brand-600 hover:bg-brand-500 text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               保存
             </button>
             <button
               onClick={() => setShowForm(false)}
-              className="px-4 py-1.5 text-xs text-zinc-400 hover:text-zinc-200"
+              className="px-5 py-2 text-[13px] text-text-secondary hover:text-text-primary hover:bg-surface-3 rounded-md transition-colors"
             >
               取消
             </button>
@@ -114,49 +151,54 @@ export default function CompetitorList() {
       )}
 
       {/* Cards */}
-      <div className="grid gap-3">
+      <div className="space-y-2">
         {competitors.map((c) => (
           <div
             key={c.id}
-            className="p-4 bg-zinc-900/60 border border-zinc-800 rounded flex items-center justify-between hover:border-zinc-700 transition-colors"
+            className="bg-surface-1 border border-border-default rounded-lg p-4 hover:border-border-strong transition-colors group"
           >
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span
-                  className={`w-2 h-2 rounded-full ${
-                    c.status === "active"
-                      ? "bg-green-500"
-                      : c.status === "paused"
-                      ? "bg-zinc-500"
-                      : "bg-red-500"
-                  }`}
-                />
-                <span className="font-semibold">{c.name}</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className={`w-2 h-2 rounded-full shrink-0 ${
+                  c.status === "active" ? "bg-success" :
+                  c.status === "paused" ? "bg-text-muted" : "bg-danger"
+                }`} />
+                <div className="min-w-0">
+                  <div className="text-[14px] font-medium text-text-primary">{c.name}</div>
+                  <div className="text-[12px] text-text-muted truncate mt-0.5">{c.url}</div>
+                </div>
               </div>
-              <div className="text-xs text-zinc-500 mt-1 truncate">{c.url}</div>
-              <div className="text-[10px] text-zinc-600 mt-1">
-                {c.scheduleCron} {c.scheduleEnabled ? "· 定时启用" : "· 定时禁用"}
+              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={() => handleTrigger(c.id)}
+                  className="px-3 py-1.5 text-[11px] font-medium bg-surface-3 hover:bg-surface-4 border border-border-default rounded-md transition-colors"
+                >
+                  ↻ 立即采集
+                </button>
+                <button
+                  onClick={() => deleteMut.mutate({ id: c.id })}
+                  className="px-3 py-1.5 text-[11px] text-danger hover:bg-danger/10 border border-danger/30 rounded-md transition-colors"
+                >
+                  删除
+                </button>
               </div>
             </div>
-            <div className="flex gap-2 shrink-0">
-              <button
-                onClick={() => handleTrigger(c.id)}
-                className="px-2.5 py-1 text-[10px] bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded transition-colors"
-              >
-                ↻ 采集
-              </button>
-              <button
-                onClick={() => deleteMut.mutate({ id: c.id })}
-                className="px-2.5 py-1 text-[10px] text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded transition-colors"
-              >
-                删除
-              </button>
+            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border-subtle">
+              <div className="text-[11px] text-text-muted">
+                频率：<span className="text-text-secondary">{c.scheduleCron}</span>
+              </div>
+              <div className="text-[11px] text-text-muted">
+                状态：<span className={c.scheduleEnabled ? "text-success" : "text-text-muted"}>
+                  {c.scheduleEnabled ? "定时启用" : "定时禁用"}
+                </span>
+              </div>
             </div>
           </div>
         ))}
         {competitors.length === 0 && (
-          <div className="text-center text-zinc-600 py-12 text-xs">
-            暂无竞品源，点击「+ 添加竞品」开始
+          <div className="bg-surface-1 border border-border-default rounded-lg p-12 text-center">
+            <div className="text-text-muted text-sm">暂无竞品源</div>
+            <div className="text-text-muted text-[12px] mt-1">点击「+ 添加竞品源」开始监控</div>
           </div>
         )}
       </div>

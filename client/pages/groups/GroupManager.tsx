@@ -14,53 +14,65 @@ export default function GroupManager() {
   });
 
   const [newName, setNewName] = useState("");
-
   const ungrouped = competitors.filter((c) => !c.groupId);
 
-  if (isLoading) return <div className="text-zinc-500">加载中...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-text-muted text-sm">加载中...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Create */}
-      <div className="flex gap-2">
-        <input
-          placeholder="新分组名称"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          className="px-3 py-1.5 bg-zinc-800 border border-zinc-700 rounded text-xs w-48 focus:outline-none focus:border-cyan-600"
-        />
-        <button
-          onClick={() => newName && createMut.mutate({ name: newName })}
-          disabled={!newName}
-          className="px-3 py-1.5 text-xs bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded disabled:opacity-40 transition-colors"
-        >
-          + 创建分组
-        </button>
+      <div className="bg-surface-1 border border-border-default rounded-lg p-4">
+        <div className="text-[11px] text-text-muted uppercase tracking-wider mb-3">创建新分组</div>
+        <div className="flex gap-3">
+          <input
+            placeholder="分组名称"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            className="flex-1 px-3 py-2 bg-surface-2 border border-border-default rounded-md text-[13px] text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30"
+          />
+          <button
+            onClick={() => newName && createMut.mutate({ name: newName })}
+            disabled={!newName}
+            className="px-4 py-2 text-[13px] font-medium bg-brand-600 hover:bg-brand-500 text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            + 创建
+          </button>
+        </div>
       </div>
 
       {/* Groups */}
-      <div className="grid gap-3">
+      <div className="space-y-3">
         {groups.map((g) => {
           const members = competitors.filter((c) => c.groupId === g.id);
           return (
-            <div key={g.id} className="p-4 bg-zinc-900/60 border border-zinc-800 rounded">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold text-sm">{g.name}</span>
+            <div key={g.id} className="bg-surface-1 border border-border-default rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-brand-400 text-[11px]">⊞</span>
+                  <span className="text-[14px] font-medium text-text-primary">{g.name}</span>
+                  <span className="text-[11px] text-text-muted">({members.length})</span>
+                </div>
                 <button
                   onClick={() => deleteMut.mutate({ id: g.id })}
-                  className="text-[10px] text-red-400 hover:text-red-300"
+                  className="text-[11px] text-danger hover:bg-danger/10 px-2 py-1 rounded transition-colors"
                 >
-                  删除分组
+                  删除
                 </button>
               </div>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {members.length === 0 && (
-                  <span className="text-[10px] text-zinc-600">暂无成员</span>
+                  <span className="text-[12px] text-text-muted italic">暂无成员</span>
                 )}
                 {members.map((c) => (
                   <span
                     key={c.id}
-                    className="px-2 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px] text-zinc-300"
+                    className="px-2.5 py-1 bg-surface-3 border border-border-default rounded-md text-[12px] text-text-secondary"
                   >
                     {c.name}
                   </span>
@@ -72,13 +84,17 @@ export default function GroupManager() {
 
         {/* Ungrouped */}
         {ungrouped.length > 0 && (
-          <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded">
-            <span className="text-zinc-500 text-xs font-medium">未分组</span>
-            <div className="flex flex-wrap gap-1.5 mt-2">
+          <div className="bg-surface-1/50 border border-border-subtle rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-text-muted text-[11px]">○</span>
+              <span className="text-[13px] text-text-muted">未分组</span>
+              <span className="text-[11px] text-text-muted">({ungrouped.length})</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
               {ungrouped.map((c) => (
                 <span
                   key={c.id}
-                  className="px-2 py-0.5 bg-zinc-800/50 border border-zinc-800 rounded text-[10px] text-zinc-500"
+                  className="px-2.5 py-1 bg-surface-2 border border-border-subtle rounded-md text-[12px] text-text-muted"
                 >
                   {c.name}
                 </span>
@@ -88,8 +104,8 @@ export default function GroupManager() {
         )}
 
         {groups.length === 0 && ungrouped.length === 0 && (
-          <div className="text-center text-zinc-600 text-xs py-8">
-            暂无分组和竞品源
+          <div className="bg-surface-1 border border-border-default rounded-lg p-12 text-center">
+            <div className="text-text-muted text-sm">暂无分组和竞品源</div>
           </div>
         )}
       </div>

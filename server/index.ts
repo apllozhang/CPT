@@ -1,5 +1,4 @@
 import "dotenv/config";
-import "global-agent/bootstrap";
 import express from "express";
 import cors from "cors";
 import { appRouter } from "./trpc.js";
