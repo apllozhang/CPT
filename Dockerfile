@@ -2,13 +2,9 @@ FROM mcr.microsoft.com/playwright:v1.52.0-noble
 
 WORKDIR /app
 
-# Disable pnpm supply-chain policy check
-ENV COREPACK_ENABLE_STRICT=0
-ENV PNPM_VERIFY_DEPS=false
-
-# Install dependencies
+# Install dependencies using npm (avoids pnpm policy issues)
 COPY package.json pnpm-lock.yaml ./
-RUN corepack enable && pnpm install --frozen-lockfile --no-strict-peer-dependencies
+RUN npm install -g pnpm@9 && pnpm install --no-frozen-lockfile --no-strict-peer-dependencies
 
 # Copy source
 COPY . .
